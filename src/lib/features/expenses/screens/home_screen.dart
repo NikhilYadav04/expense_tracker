@@ -22,185 +22,383 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+    final bool isTablet = sw > 600;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Expense Tracker'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              context.read<ExpensesProvider>().fetchExpenses();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              final shouldLogout = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
-                    ),
-                    FilledButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Logout'),
-                    ),
-                  ],
-                ),
-              );
+      backgroundColor: const Color(0xFF4A9B8E),
+      body: SafeArea(
+        child: Consumer<ExpensesProvider>(
+          builder: (context, expensesProvider, _) {
+            final user = context.watch<AuthProvider>().user;
+            final userName = user?.email?.split('@')[0] ?? 'User';
 
-              if (shouldLogout == true && mounted) {
-                await context.read<AuthProvider>().signOut();
-              }
-            },
-          ),
-        ],
-      ),
-      body: Consumer<ExpensesProvider>(
-        builder: (context, expensesProvider, _) {
-          final currencyFormat = NumberFormat.currency(symbol: '₹');
+            //* Calculate income and expenses
+            final totalExpenses = expensesProvider.totalExpenses;
+            final totalIncome = 5000.0;
+            final totalBalance = totalIncome - totalExpenses;
 
-          return Column(
-            children: [
-              // Summary Card
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.primaryContainer,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Total Expenses',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white70,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      currencyFormat.format(expensesProvider.totalExpenses),
-                      style:
-                          Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                    ),
-                  ],
-                ),
-              ),
-
-              //* Expenses List
-              Expanded(
-                child: expensesProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : expensesProvider.error != null
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.error_outline,
-                                  size: 80,
-                                  color: Colors.red[300],
+            return Column(
+              children: [
+                //* Header Section
+                Padding(
+                  padding: EdgeInsets.all(sw * 0.05),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Good afternoon,',
+                                style: TextStyle(
+                                  fontSize: isTablet ? sw * 0.032 : sw * 0.038,
+                                  fontFamily: 'Poppins-Regular',
+                                  color: Colors.white.withOpacity(0.9),
                                 ),
-                                const SizedBox(height: 16),
+                              ),
+                              Text(
+                                userName.substring(0, 1).toUpperCase() +
+                                    userName.substring(1),
+                                style: TextStyle(
+                                  fontSize: isTablet ? sw * 0.045 : sw * 0.055,
+                                  fontFamily: 'Poppins-Bold',
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.notifications_outlined,
+                                  color: Colors.white,
+                                  size: isTablet ? sw * 0.05 : sw * 0.06,
+                                ),
+                                onPressed: () {},
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.logout,
+                                  color: Colors.white,
+                                  size: isTablet ? sw * 0.05 : sw * 0.06,
+                                ),
+                                onPressed: () async {
+                                  final shouldLogout = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Logout'),
+                                      content: const Text(
+                                          'Are you sure you want to logout?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text('Logout'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (shouldLogout == true && mounted) {
+                                    await context
+                                        .read<AuthProvider>()
+                                        .signOut();
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: sh * 0.025),
+
+                      //* Balance Card
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(sw * 0.05),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF5DAA97),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
                                 Text(
-                                  'Error loading expenses',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        color: Colors.red[700],
-                                      ),
+                                  'Total Balance',
+                                  style: TextStyle(
+                                    fontSize:
+                                        isTablet ? sw * 0.032 : sw * 0.035,
+                                    fontFamily: 'Poppins-Regular',
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.more_horiz,
+                                  color: Colors.white,
+                                  size: isTablet ? sw * 0.05 : sw * 0.06,
                                 ),
                               ],
                             ),
-                          )
-                        : expensesProvider.expenses.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.receipt_long_outlined,
-                                      size: 80,
-                                      color: Colors.grey[400],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No expenses yet',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge
-                                          ?.copyWith(
-                                            color: Colors.grey[600],
-                                          ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Tap the + button to add your first expense',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: Colors.grey[500],
-                                          ),
-                                    ),
-                                  ],
+                            SizedBox(height: sh * 0.01),
+                            Text(
+                              '\$ ${totalBalance.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: isTablet ? sw * 0.065 : sw * 0.08,
+                                fontFamily: 'Poppins-Bold',
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: sh * 0.02),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildIncomeExpenseCard(
+                                    icon: Icons.arrow_downward,
+                                    label: 'Income',
+                                    amount: totalIncome,
+                                    isIncome: true,
+                                    isTablet: isTablet,
+                                    sw: sw,
+                                  ),
                                 ),
-                              )
-                            : RefreshIndicator(
-                                onRefresh: () =>
-                                    expensesProvider.fetchExpenses(),
-                                child: ListView.builder(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  itemCount: expensesProvider.expenses.length,
-                                  itemBuilder: (context, index) {
-                                    final expense =
-                                        expensesProvider.expenses[index];
-                                    return _ExpenseCard(expense: expense);
-                                  },
+                                SizedBox(width: sw * 0.03),
+                                Expanded(
+                                  child: _buildIncomeExpenseCard(
+                                    icon: Icons.arrow_upward,
+                                    label: 'Expenses',
+                                    amount: totalExpenses,
+                                    isIncome: false,
+                                    isTablet: isTablet,
+                                    sw: sw,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                //* Expenses List Section
+                Expanded(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(sw * 0.05),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Income & Expense Listing',
+                                style: TextStyle(
+                                  fontSize: isTablet ? sw * 0.038 : sw * 0.042,
+                                  fontFamily: 'Poppins-Bold',
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
                                 ),
                               ),
-              ),
-            ],
-          );
-        },
+                              TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'See all',
+                                  style: TextStyle(
+                                    fontSize: isTablet ? sw * 0.03 : sw * 0.035,
+                                    fontFamily: 'Poppins-Medium',
+                                    color: const Color(0xFF4A9B8E),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: expensesProvider.isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : expensesProvider.error != null
+                                  ? Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.error_outline,
+                                            size: 80,
+                                            color: Colors.red[300],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            'Error loading expenses',
+                                            style: TextStyle(
+                                              fontSize: isTablet
+                                                  ? sw * 0.04
+                                                  : sw * 0.045,
+                                              fontFamily: 'Poppins-Medium',
+                                              color: Colors.red[700],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : expensesProvider.expenses.isEmpty
+                                      ? Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.receipt_long_outlined,
+                                                size: 80,
+                                                color: Colors.grey[400],
+                                              ),
+                                              const SizedBox(height: 16),
+                                              Text(
+                                                'No expenses yet',
+                                                style: TextStyle(
+                                                  fontSize: isTablet
+                                                      ? sw * 0.04
+                                                      : sw * 0.045,
+                                                  fontFamily: 'Poppins-Medium',
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : RefreshIndicator(
+                                          onRefresh: () =>
+                                              expensesProvider.fetchExpenses(),
+                                          child: ListView.builder(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: sw * 0.05,
+                                            ),
+                                            itemCount: expensesProvider
+                                                .expenses.length,
+                                            itemBuilder: (context, index) {
+                                              final expense = expensesProvider
+                                                  .expenses[index];
+                                              return _ExpenseListItem(
+                                                expense: expense,
+                                                isTablet: isTablet,
+                                                sw: sw,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/add-expense'),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Expense'),
+    );
+  }
+
+  Widget _buildIncomeExpenseCard({
+    required IconData icon,
+    required String label,
+    required double amount,
+    required bool isIncome,
+    required bool isTablet,
+    required double sw,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(sw * 0.03),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(sw * 0.02),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: isTablet ? sw * 0.04 : sw * 0.045,
+            ),
+          ),
+          SizedBox(width: sw * 0.02),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: isTablet ? sw * 0.025 : sw * 0.028,
+                    fontFamily: 'Poppins-Regular',
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+                Text(
+                  '\$ ${amount.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: isTablet ? sw * 0.032 : sw * 0.038,
+                    fontFamily: 'Poppins-Bold',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _ExpenseCard extends StatelessWidget {
+class _ExpenseListItem extends StatelessWidget {
   final ExpenseModel expense;
+  final bool isTablet;
+  final double sw;
 
-  const _ExpenseCard({required this.expense});
+  const _ExpenseListItem({
+    required this.expense,
+    required this.isTablet,
+    required this.sw,
+  });
 
   IconData _getCategoryIcon(ExpenseCategory category) {
     switch (category) {
       case ExpenseCategory.food:
         return Icons.restaurant;
       case ExpenseCategory.travel:
-        return Icons.flight;
+        return Icons.travel_explore;
       case ExpenseCategory.shopping:
         return Icons.shopping_bag;
       case ExpenseCategory.bills:
@@ -227,111 +425,67 @@ class _ExpenseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(symbol: '₹');
     final dateFormat = DateFormat('MMM dd, yyyy');
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(
-          backgroundColor: _getCategoryColor(expense.category).withOpacity(0.2),
-          child: Icon(
-            _getCategoryIcon(expense.category),
-            color: _getCategoryColor(expense.category),
-          ),
-        ),
-        title: Text(
-          expense.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(expense.category.displayName),
-            const SizedBox(height: 2),
-            Text(
-              dateFormat.format(expense.expenseDate),
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              currencyFormat.format(expense.amount),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, size: 20),
-                  onPressed: () {
-                    context.push('/edit-expense', extra: expense);
-                  },
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+    return Container(
+      margin: EdgeInsets.only(bottom: sw * 0.03),
+      child: InkWell(
+        onTap: () {
+          context.push('/edit-expense', extra: expense);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: EdgeInsets.all(sw * 0.03),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(sw * 0.03),
+                decoration: BoxDecoration(
+                  color: _getCategoryColor(expense.category).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.delete, size: 20),
-                  color: Colors.red,
-                  onPressed: () async {
-                    final shouldDelete = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Delete Expense'),
-                        content: const Text(
-                            'Are you sure you want to delete this expense?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
-                          ),
-                          FilledButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Colors.red,
-                            ),
-                            child: const Text('Delete'),
-                          ),
-                        ],
+                child: Icon(
+                  _getCategoryIcon(expense.category),
+                  color: _getCategoryColor(expense.category),
+                  size: isTablet ? sw * 0.05 : sw * 0.06,
+                ),
+              ),
+              SizedBox(width: sw * 0.03),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      expense.title,
+                      style: TextStyle(
+                        fontSize: isTablet ? sw * 0.035 : sw * 0.04,
+                        fontFamily: 'Poppins-Medium',
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
                       ),
-                    );
-
-                    if (shouldDelete == true && context.mounted) {
-                      await context
-                          .read<ExpensesProvider>()
-                          .deleteExpense(expense.id);
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Expense deleted successfully'),
-                          ),
-                        );
-                      }
-                    }
-                  },
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                    ),
+                    Text(
+                      dateFormat.format(expense.expenseDate),
+                      style: TextStyle(
+                        fontSize: isTablet ? sw * 0.028 : sw * 0.032,
+                        fontFamily: 'Poppins-Regular',
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
+              ),
+              Text(
+                '- \$ ${expense.amount.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: isTablet ? sw * 0.035 : sw * 0.04,
+                  fontFamily: 'Poppins-Bold',
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red[400],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

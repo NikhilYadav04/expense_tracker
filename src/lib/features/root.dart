@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personal_expense_tracker/features/expenses/screens/home_screen.dart';
+import 'package:personal_expense_tracker/features/expenses/screens/statistics_screen.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -13,9 +14,25 @@ class _RootScreenState extends State<RootScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    Container(),
-    Container(),
-    Container()
+    const StatisticsScreen(),
+    Container(
+      color: Colors.white,
+      child: const Center(
+        child: Text(
+          'Wallet Screen',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+      ),
+    ),
+    Container(
+      color: Colors.white,
+      child: const Center(
+        child: Text(
+          'Profile Screen',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+      ),
+    ),
   ];
 
   @override
