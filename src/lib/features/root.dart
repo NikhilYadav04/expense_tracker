@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:personal_expense_tracker/features/expenses/screens/home_screen.dart';
 import 'package:personal_expense_tracker/features/expenses/screens/statistics_screen.dart';
 
@@ -61,7 +62,9 @@ class _RootScreenState extends State<RootScreen> {
           ],
         ),
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            context.push('/add-expense');
+          },
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: Icon(

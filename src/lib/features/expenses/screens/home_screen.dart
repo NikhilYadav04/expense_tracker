@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personal_expense_tracker/core/config/constants.dart';
 import 'package:personal_expense_tracker/features/expenses/providers/expense_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -36,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             //* Calculate income and expenses
             final totalExpenses = expensesProvider.totalExpenses;
-            final totalIncome = 5000.0;
+            final totalIncome = totalIncomeUser;
             final totalBalance = totalIncome - totalExpenses;
 
             return Column(
@@ -93,16 +94,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                   final shouldLogout = await showDialog<bool>(
                                     context: context,
                                     builder: (context) => AlertDialog(
-                                      title: const Text('Logout'),
-                                      content: const Text(
-                                          'Are you sure you want to logout?'),
+                                      title: Text(
+                                        'Logout',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      content: Text(
+                                        'Are you sure you want to logout?',
+                                        style: TextStyle(
+                                          fontSize: isTablet
+                                              ? sw * 0.032
+                                              : sw * 0.035,
+                                          fontFamily: 'Poppins-Regular',
+                                        ),
+                                      ),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(context, false),
-                                          child: const Text('Cancel'),
+                                          child: Text(
+                                            'Cancel',
+                                            style: TextStyle(
+                                              color: Color.fromARGB(
+                                                  255, 33, 112, 99),
+                                            ),
+                                          ),
                                         ),
                                         FilledButton(
+                                          style: ButtonStyle(
+                                              backgroundColor:
+                                                  WidgetStatePropertyAll(
+                                            Color.fromARGB(255, 33, 112, 99),
+                                          )),
                                           onPressed: () =>
                                               Navigator.pop(context, true),
                                           child: const Text('Logout'),
@@ -223,17 +246,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: Colors.black87,
                                 ),
                               ),
-                              TextButton(
-                                onPressed: () {},
-                                child: Text(
-                                  'See all',
-                                  style: TextStyle(
-                                    fontSize: isTablet ? sw * 0.03 : sw * 0.035,
-                                    fontFamily: 'Poppins-Medium',
-                                    color: const Color(0xFF4A9B8E),
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -287,6 +299,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   color: Colors.grey[600],
                                                 ),
                                               ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                'Tap the + button to add one',
+                                                style: TextStyle(
+                                                  fontSize: isTablet
+                                                      ? sw * 0.03
+                                                      : sw * 0.035,
+                                                  fontFamily: 'Poppins-Regular',
+                                                  color: Colors.grey[500],
+                                                ),
+                                              ),
                                             ],
                                           ),
                                         )
@@ -306,6 +329,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 expense: expense,
                                                 isTablet: isTablet,
                                                 sw: sw,
+                                                onDelete: () => expensesProvider
+                                                    .deleteExpense(expense.id),
                                               );
                                             },
                                           ),
@@ -386,11 +411,13 @@ class _ExpenseListItem extends StatelessWidget {
   final ExpenseModel expense;
   final bool isTablet;
   final double sw;
+  final VoidCallback onDelete;
 
   const _ExpenseListItem({
     required this.expense,
     required this.isTablet,
     required this.sw,
+    required this.onDelete,
   });
 
   IconData _getCategoryIcon(ExpenseCategory category) {
@@ -482,6 +509,66 @@ class _ExpenseListItem extends StatelessWidget {
                   fontFamily: 'Poppins-Bold',
                   fontWeight: FontWeight.bold,
                   color: Colors.red[400],
+                ),
+              ),
+              SizedBox(
+                width: sw * 0.03,
+              ),
+              InkWell(
+                onTap: () async {
+                  //* Delete
+
+                  final shouldDelete = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(
+                        'Delete',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      content: Text(
+                        'Are you sure you want to delete the task?',
+                        style: TextStyle(
+                          fontSize: isTablet ? sw * 0.032 : sw * 0.035,
+                          fontFamily: 'Poppins-Regular',
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 33, 112, 99),
+                            ),
+                          ),
+                        ),
+                        FilledButton(
+                          style: ButtonStyle(
+                              backgroundColor: WidgetStatePropertyAll(
+                            Color.fromARGB(255, 33, 112, 99),
+                          )),
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Delete'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (shouldDelete == true) {
+                    onDelete(); 
+                  }
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: const Color(0xFF4A9B8E),
+                      borderRadius: BorderRadius.circular(10)),
+                  padding: EdgeInsets.all(sw * 0.01),
+                  child: Icon(
+                    Icons.delete_outline,
+                    color: Colors.white,
+                    size: isTablet ? sw * 0.035 : sw * 0.04,
+                  ),
                 ),
               ),
             ],

@@ -67,6 +67,8 @@ class ExpensesProvider extends ChangeNotifier {
         'expense_date': expenseDate.toIso8601String(),
       });
 
+      print("added");
+
       await fetchExpenses();
     } catch (e) {
       _error = e.toString();
@@ -98,7 +100,7 @@ class ExpensesProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteExpense(String id) async {
+  void deleteExpense(String id) async {
     try {
       await Supabase.instance.client.from('expenses').delete().eq('id', id);
 

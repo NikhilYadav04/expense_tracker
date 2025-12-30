@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -35,34 +36,17 @@ class OnboardingScreen extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Main illustration image
+                    //* Main illustration image
                     Image.asset(
                       'assets/onboard1.png',
                       fit: BoxFit.contain,
-                    ),
-
-                    //* Dimensions badge
-                    Positioned(
-                      bottom: sw * 0.04,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: sw * 0.04,
-                          vertical: sw * 0.015,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[600],
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '414 × 600',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: isTablet ? sw * 0.028 : sw * 0.035,
-                            fontFamily: 'Poppins-Medium',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.account_balance_wallet_outlined,
+                          size: sw * 0.3,
+                          color: const Color(0xFF4A9B8E),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -97,13 +81,13 @@ class OnboardingScreen extends StatelessWidget {
 
               SizedBox(height: sh * 0.04),
 
-              // Get Started button
+              //* Get Started button
               SizedBox(
                 width: double.infinity,
                 height: isTablet ? sw * 0.08 : sw * 0.14,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate to next screen
+                    context.push('/signup');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A9B8E),
@@ -141,7 +125,7 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      // Navigate to login screen
+                      context.push('/login');
                     },
                     child: Text(
                       'Log In',

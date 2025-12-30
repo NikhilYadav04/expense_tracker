@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:personal_expense_tracker/core/config/constants.dart';
 import 'package:personal_expense_tracker/features/expenses/models/expense_model.dart';
 import 'package:personal_expense_tracker/features/expenses/providers/expense_provider.dart';
 import 'package:provider/provider.dart';
@@ -158,6 +159,21 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         const SnackBar(
           content: Text('Please select a category'),
           backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final provider = context.read<ExpensesProvider>();
+    final futureExpense = (totalIncomeUser - provider.totalExpenses) -
+        double.parse(_amountController.text.trim());
+
+    if (futureExpense < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Oops! Your expenses exceed your income. Try adjusting your spending'),
+          backgroundColor: Colors.red,
         ),
       );
       return;

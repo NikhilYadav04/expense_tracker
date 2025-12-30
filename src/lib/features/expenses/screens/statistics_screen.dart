@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personal_expense_tracker/core/config/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -14,7 +15,7 @@ class StatisticsScreen extends StatefulWidget {
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
   String _selectedPeriod = 'Day';
-  bool _showExpenses = true;
+  final _totalExpenses = totalIncomeUser;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +60,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             padding: EdgeInsets.all(sw * 0.05),
             child: Column(
               children: [
-                // Period Selector
+                //* Period Selector
                 Container(
                   padding: EdgeInsets.all(sw * 0.01),
                   decoration: BoxDecoration(
@@ -78,44 +79,33 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
                 SizedBox(height: sh * 0.02),
 
-                // Expense/Income Toggle
+                //* Expense Label
                 Align(
                   alignment: Alignment.centerRight,
                   child: Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: sw * 0.03,
-                      vertical: sw * 0.01,
+                      vertical: sw * 0.015,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.grey[300]!),
                     ),
-                    child: DropdownButton<bool>(
-                      value: _showExpenses,
-                      underline: const SizedBox(),
-                      items: const [
-                        DropdownMenuItem(
-                          value: true,
-                          child: Text('Expense'),
-                        ),
-                        DropdownMenuItem(
-                          value: false,
-                          child: Text('Income'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _showExpenses = value ?? true;
-                        });
-                      },
+                    child: Text(
+                      'Expense',
+                      style: TextStyle(
+                        fontSize: isTablet ? sw * 0.032 : sw * 0.036,
+                        fontFamily: 'Poppins-Medium',
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                 ),
 
                 SizedBox(height: sh * 0.03),
 
-                // Graph
+                //* Graph
                 Container(
                   height: sh * 0.3,
                   padding: EdgeInsets.all(sw * 0.04),
@@ -124,12 +114,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.grey[200]!),
                   ),
-                  child: _buildLineChart(expenses, isTablet, sw),
+                  child:
+                      _buildLineChart(expenses, isTablet, sw, _totalExpenses),
                 ),
 
                 SizedBox(height: sh * 0.03),
 
-                // Top Spending Section
+                //* Top Spending Section
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -154,7 +145,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
                 SizedBox(height: sh * 0.02),
 
-                // Top Spending Items
+                //* Top Spending Items
                 ...expenses.take(5).map((expense) {
                   return _buildTopSpendingItem(
                     expense: expense,
@@ -200,8 +191,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildLineChart(
-      List<ExpenseModel> expenses, bool isTablet, double sw) {
+  Widget _buildLineChart(List<ExpenseModel> expenses, bool isTablet, double sw,
+      final double totalExpenses) {
     if (expenses.isEmpty) {
       return Center(
         child: Text(
@@ -215,22 +206,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       );
     }
 
-    // Group expenses by month
     final Map<int, double> monthlyData = {};
     for (var expense in expenses) {
       final month = expense.expenseDate.month;
       monthlyData[month] = (monthlyData[month] ?? 0) + expense.amount;
     }
 
-    // Create spots for the chart
     final spots = monthlyData.entries
         .map((e) => FlSpot(e.key.toDouble(), e.value))
         .toList()
       ..sort((a, b) => a.x.compareTo(b.x));
 
-    final maxY = monthlyData.values.isEmpty
-        ? 100.0
-        : monthlyData.values.reduce((a, b) => a > b ? a : b) * 1.2;
+    final maxY = totalExpenses;
 
     return LineChart(
       LineChartData(
